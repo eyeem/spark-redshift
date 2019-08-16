@@ -23,7 +23,6 @@ import sbtsparkpackage.SparkPackagePlugin.autoImport._
 import scoverage.ScoverageKeys
 import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
-import com.typesafe.sbt.pgp._
 import bintray.BintrayPlugin.autoImport._
 
 object SparkRedshiftBuild extends Build {
@@ -56,7 +55,6 @@ object SparkRedshiftBuild extends Build {
       sparkComponents ++= Seq("sql", "hive"),
       spIgnoreProvided := true,
       licenses += "Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"),
-      credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
       scalacOptions ++= Seq("-target:jvm-1.8"),
       javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
       libraryDependencies ++= Seq(
