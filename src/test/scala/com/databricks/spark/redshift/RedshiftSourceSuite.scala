@@ -20,28 +20,29 @@ import java.io.{ByteArrayInputStream, OutputStreamWriter}
 import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.{BucketLifecycleConfiguration, S3Object, S3ObjectInputStream}
 import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule
+import com.amazonaws.services.s3.model.{BucketLifecycleConfiguration, S3Object, S3ObjectInputStream}
+import com.databricks.spark.redshift.Parameters.MergedParameters
+import org.apache.hadoop.fs.s3native.S3NInMemoryFileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.http.client.methods.HttpRequestBase
+import org.apache.spark.SparkContext
+import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.sources._
+import org.apache.spark.sql.types._
 import org.mockito.Matchers._
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.fs.s3native.S3NInMemoryFileSystem
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers}
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.sources._
-import org.apache.spark.sql._
-import org.apache.spark.sql.types._
-import com.databricks.spark.redshift.Parameters.MergedParameters
-import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
 
 /**
  * Tests main DataFrame loading and writing functionality
  */
+//noinspection ScalaStyle
 class RedshiftSourceSuite
   extends QueryTest
   with Matchers
@@ -361,7 +362,7 @@ class RedshiftSourceSuite
     // `tempdir` between every unit test, there should only be one directory here.
     assert(s3FileSystem.listStatus(new Path(s3TempDir)).length === 1)
     val dirWithAvroFiles = s3FileSystem.listStatus(new Path(s3TempDir)).head.getPath.toUri.toString
-    val written = testSqlContext.read.format("com.databricks.spark.avro").load(dirWithAvroFiles)
+    val written = testSqlContext.read.format("com.databricks.spark.avro").option("ignoreExtension", "false").load(dirWithAvroFiles)
     checkAnswer(written, TestUtils.expectedDataWithConvertedTimesAndDates)
     mockRedshift.verifyThatConnectionsWereClosed()
     mockRedshift.verifyThatExpectedQueriesWereIssued(expectedCommands)
@@ -429,7 +430,8 @@ class RedshiftSourceSuite
     // `tempdir` between every unit test, there should only be one directory here.
     assert(s3FileSystem.listStatus(new Path(s3TempDir)).length === 1)
     val dirWithAvroFiles = s3FileSystem.listStatus(new Path(s3TempDir)).head.getPath.toUri.toString
-    val written = testSqlContext.read.format("com.databricks.spark.avro").load(dirWithAvroFiles)
+    println(dirWithAvroFiles)
+    val written = testSqlContext.read.format("avro").option("ignoreExtension", "false").load(dirWithAvroFiles)
     checkAnswer(written, TestUtils.expectedDataWithConvertedTimesAndDates)
     mockRedshift.verifyThatConnectionsWereClosed()
     mockRedshift.verifyThatExpectedQueriesWereIssued(expectedCommands)

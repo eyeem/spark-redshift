@@ -46,19 +46,19 @@ object SparkRedshiftBuild extends Build {
       name := "spark-redshift",
       organization := "com.databricks",
       scalaVersion := "2.11.7",
-      crossScalaVersions := Seq("2.10.5", "2.11.7"),
-      sparkVersion := "2.4.0",
+      crossScalaVersions := Seq("2.11.7", "2.12.9"),
+      sparkVersion := "2.4.3",
       testSparkVersion := sys.props.get("spark.testVersion").getOrElse(sparkVersion.value),
       testSparkAvroVersion := sys.props.get("sparkAvro.testVersion").getOrElse("3.0.0"),
-      testHadoopVersion := sys.props.get("hadoop.testVersion").getOrElse("2.2.0"),
-      testAWSJavaSDKVersion := sys.props.get("aws.testVersion").getOrElse("1.10.22"),
+      testHadoopVersion := sys.props.get("hadoop.testVersion").getOrElse("2.8.3"),
+      testAWSJavaSDKVersion := sys.props.get("aws.testVersion").getOrElse("1.11.566"),
       spName := "databricks/spark-redshift",
       sparkComponents ++= Seq("sql", "hive"),
       spIgnoreProvided := true,
       licenses += "Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"),
       credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-      scalacOptions ++= Seq("-target:jvm-1.6"),
-      javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
+      scalacOptions ++= Seq("-target:jvm-1.8"),
+      javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
       libraryDependencies ++= Seq(
         "org.slf4j" % "slf4j-api" % "1.7.5",
         "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.4",
@@ -80,7 +80,7 @@ object SparkRedshiftBuild extends Build {
         // official Redshift driver, we still run basic tests with it.
         "postgresql" % "postgresql" % "8.3-606.jdbc4" % "test",
         "com.google.guava" % "guava" % "14.0.1" % "test",
-        "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+        "org.scalatest" %% "scalatest" % "3.0.8" % "test",
         "org.mockito" % "mockito-core" % "1.10.19" % "test"
       ),
       libraryDependencies ++= (if (new ComparableVersion(testAWSJavaSDKVersion.value) < new ComparableVersion("1.8.10")) {
@@ -111,7 +111,9 @@ object SparkRedshiftBuild extends Build {
         Seq(
           "org.apache.hadoop" % "hadoop-client" % testHadoopVersion.value % "test" exclude("javax.servlet", "servlet-api") force(),
           "org.apache.hadoop" % "hadoop-common" % testHadoopVersion.value % "test" exclude("javax.servlet", "servlet-api") force(),
-          "org.apache.hadoop" % "hadoop-common" % testHadoopVersion.value % "test" classifier "tests" force()
+          "org.apache.hadoop" % "hadoop-common" % testHadoopVersion.value % "test" classifier "tests" force(),
+          "org.apache.hadoop" % "hadoop-aws" % testHadoopVersion.value % "test" force()
+
         )
       }),
       libraryDependencies ++= Seq(
@@ -151,40 +153,26 @@ object SparkRedshiftBuild extends Build {
       fork in Test := true,
       javaOptions in Test ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M"),
 
-      /********************
+      /* *******************
        * Release settings *
-       ********************/
+       ******************* */
 
-      publishMavenStyle := true,
+      // publishMavenStyle := true,
       releaseCrossBuild := true,
+
       licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-      releasePublishArtifactsAction := PgpKeys.publishSigned.value,
 
-      pomExtra :=
-        <url>https://github.com/databricks/spark-redshift</url>
-        <scm>
-          <url>git@github.com:databricks/spark-redshift.git</url>
-          <connection>scm:git:git@github.com:databricks/spark-redshift.git</connection>
-        </scm>
-        <developers>
-          <developer>
-            <id>meng</id>
-            <name>Xiangrui Meng</name>
-            <url>https://github.com/mengxr</url>
-          </developer>
-          <developer>
-            <id>JoshRosen</id>
-            <name>Josh Rosen</name>
-            <url>https://github.com/JoshRosen</url>
-          </developer>
-          <developer>
-            <id>marmbrus</id>
-            <name>Michael Armbrust</name>
-            <url>https://github.com/marmbrus</url>
-          </developer>
-        </developers>,
+      //releasePublishArtifactsAction := PgpKeys.publishSigned.value,
 
-      bintrayReleaseOnPublish in ThisBuild := false,
+
+      publishArtifact in(Test, packageBin) := true,
+
+      bintrayOrganization := Some("eyeem"),
+
+      bintrayRepository := "maven-private",
+
+
+     // bintrayReleaseOnPublish in ThisBuild := false,
 
       // Add publishing to spark packages as another step.
       releaseProcess := Seq[ReleaseStep](

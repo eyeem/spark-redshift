@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.s3native.InMemoryNativeFileSystemStore;
  * without actually connecting to S3 for unit testing.
  */
 public class S3NInMemoryFileSystem extends NativeS3FileSystem {
-  public S3NInMemoryFileSystem() {
-    super(new InMemoryNativeFileSystemStore());
-  }
+    public S3NInMemoryFileSystem() {
+        super(new InMemoryNativeFileSystemStore());
+    }
 }
