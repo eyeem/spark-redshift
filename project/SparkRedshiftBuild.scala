@@ -43,7 +43,7 @@ object SparkRedshiftBuild extends Build {
     .settings(Defaults.itSettings: _*)
     .settings(
       name := "spark-redshift",
-      organization := "com.databricks",
+      organization := "com.eyeem",
       scalaVersion := "2.11.7",
       crossScalaVersions := Seq("2.11.7", "2.12.9"),
       sparkVersion := "2.4.3",
